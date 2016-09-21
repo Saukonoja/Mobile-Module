@@ -72,8 +72,7 @@ public class MainActivity extends AppCompatActivity {
     public void getNew(View v) {
         list.clear();
 
-        newDeviceArrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, list);
-        listView.setAdapter(newDeviceArrayAdapter);
+
 
         if (mBluetoothAdapter.isDiscovering()) {
             mBluetoothAdapter.cancelDiscovery();
@@ -94,7 +93,8 @@ public class MainActivity extends AppCompatActivity {
         //IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         //registerReceiver(mReceiver, filter); // Don't forget to unregister during onDestroy
 
-
+        newDeviceArrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, list);
+        listView.setAdapter(newDeviceArrayAdapter);
     }
 
     // Create a BroadcastReceiver for ACTION_FOUND
