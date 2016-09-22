@@ -17,6 +17,15 @@
         android:id="@+id/button"
         android:layout_alignParentTop="true"
         android:onClick="getPaired"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Search"
+        android:id="@+id/button3"
+        android:layout_below="@+id/button"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:onClick="search"/>
 
     <ListView
         android:layout_width="match_parent"
@@ -30,8 +39,24 @@
         android:layout_height="wrap_content"
         android:text="Get New"
         android:id="@+id/button2"
-        android:layout_below="@+id/button"
+        android:layout_below="@+id/button3"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:onClick="getNew"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Device is currently hidden"
+        android:id="@+id/switchStatus"
+        android:layout_below="@+id/button2" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:id="@+id/switch1"
+        android:layout_below="@+id/button2"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 </RelativeLayout>
