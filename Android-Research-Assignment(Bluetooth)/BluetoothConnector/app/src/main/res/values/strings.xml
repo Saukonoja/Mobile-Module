@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">BluetoothConnector</string>
+    <string name="search">Search</string>
+    <string name="rename_device">Rename device</string>
+    <string name="visible_time">Device visible time</string>
+    <string name="show_received_files">Show received files</string>
 </resources>

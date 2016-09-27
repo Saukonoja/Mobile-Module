@@ -6,7 +6,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.os.Bundle;
@@ -39,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         mySwitch = (Switch) findViewById(R.id.switch1);
         mySwitch.setChecked(false);
 
-        mySwitch.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+        mySwitch.setOnCheckedChangeListener(    new OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView,
                                          boolean isChecked) {
@@ -56,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+
 
         //check the current state before we display the screen
         if (mySwitch.isChecked()){
@@ -82,6 +88,25 @@ public class MainActivity extends AppCompatActivity {
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         registerReceiver(mReceiver, filter);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        MenuItem itemSwitch = menu.findItem(R.id.mySwitch);
+        itemSwitch.setActionView(R.layout.use_switch);
+        final Switch sw = (Switch) menu.findItem(R.id.mySwitch).getActionView().findViewById(R.id.action_switch);
+        sw.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked){
+
+                }else{
+
+                }
+            }
+        });
+        return true;
     }
 
     public void getPaired(View v){
