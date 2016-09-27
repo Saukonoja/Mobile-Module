@@ -7,9 +7,9 @@
         app:showAsAction="always"
         app:actionLayout="@layout/use_switch"/>
     <item
-        android:id="@+id/action_music"
+        android:id="@+id/action_search"
         app:showAsAction="ifRoom"
-        android:icon="@drawable/search2"
+        android:icon="@drawable/search"
         android:title="@string/search"/>
     <item
         android:id="@+id/action_rename"

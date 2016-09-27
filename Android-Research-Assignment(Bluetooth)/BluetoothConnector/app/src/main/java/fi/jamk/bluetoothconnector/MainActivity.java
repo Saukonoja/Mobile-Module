@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -31,17 +32,22 @@ public class MainActivity extends AppCompatActivity {
     ArrayAdapter pairedArrayAdapter;
     ArrayAdapter newDeviceArrayAdapter;
     BluetoothAdapter mBluetoothAdapter;
-    ListView listView;
-    final ArrayList<String> list = new ArrayList<>();
+    ListView listViewPaired;
+    ListView listViewSearch;
+    final ArrayList<String> listPaired = new ArrayList<>();
+    final ArrayList<String> listSearch = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        newDeviceArrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, listSearch);
+
         switchStatus = (TextView) findViewById(R.id.switchStatus);
         mySwitch = (Switch) findViewById(R.id.switch1);
         mySwitch.setChecked(false);
+
 
         mySwitch.setOnCheckedChangeListener(    new OnCheckedChangeListener() {
             @Override
@@ -62,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-
         //check the current state before we display the screen
         if (mySwitch.isChecked()){
             switchStatus.setText("Device is currently visible");
@@ -71,23 +76,24 @@ public class MainActivity extends AppCompatActivity {
             switchStatus.setText("Device is hidden");
         }
 
-        listView = (ListView) findViewById(R.id.listView);
+        listViewPaired = (ListView) findViewById(R.id.listViewPaired);
+        listViewSearch = (ListView) findViewById(R.id.listViewSearch);
         //Create bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
             // Device does not support Bluetooth
         }
 
+
         //Check if bluetooth is enabled
-        if (!mBluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-        }
+
         IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_FOUND);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         registerReceiver(mReceiver, filter);
+        getPaired();
+
     }
 
     @Override
@@ -96,23 +102,41 @@ public class MainActivity extends AppCompatActivity {
         MenuItem itemSwitch = menu.findItem(R.id.mySwitch);
         itemSwitch.setActionView(R.layout.use_switch);
         final Switch sw = (Switch) menu.findItem(R.id.mySwitch).getActionView().findViewById(R.id.action_switch);
+        if (mBluetoothAdapter.isEnabled()){
+            sw.setChecked(true);
+        }
         sw.setOnCheckedChangeListener(new OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
                 if (isChecked){
-
+                    if (!mBluetoothAdapter.isEnabled()) {
+                        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                    }
                 }else{
-
+                    mBluetoothAdapter.disable();
                 }
             }
         });
         return true;
     }
 
-    public void getPaired(View v){
-        list.clear();
-        pairedArrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, list);
-        listView.setAdapter(pairedArrayAdapter);
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        switch(item.getItemId()){
+            case R.id.action_search:
+                search();
+                return  true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    public void getPaired(){
+        listPaired.clear();
+        pairedArrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, listPaired);
+        listViewPaired.setAdapter(pairedArrayAdapter);
         //query for paired devices
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
         //If there are paired devices
@@ -120,41 +144,33 @@ public class MainActivity extends AppCompatActivity {
             // Loop through paired devices
             for (BluetoothDevice device : pairedDevices) {
                 // Add the name and address to an array adapter to show in a ListView
-                list.add(device.getName() + "\n" + device.getAddress());
+                listPaired.add(device.getName() + "\n" + device.getAddress());
             }
         }
     }
-    public void search(View v){
-        if (mBluetoothAdapter.isDiscovering()) {
-            mBluetoothAdapter.cancelDiscovery();
-        }
-        mBluetoothAdapter.startDiscovery();
-    }
 
-    public void getNew(View v) {
-        //list.clear();
-        newDeviceArrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, list);
-        listView.setAdapter(newDeviceArrayAdapter);
+    public void search(){
 
+        new Thread(new Runnable(){
+            public void run(){
+                if (mBluetoothAdapter.isDiscovering()) {
+                    mBluetoothAdapter.cancelDiscovery();
+                }
+                mBluetoothAdapter.startDiscovery();
+            }
+        }).start();
 
+        new Thread(new Runnable(){
+            public void run(){
+                try {
+                    Thread.sleep(12000);
+                    listViewSearch.setAdapter(newDeviceArrayAdapter);
+                }catch (InterruptedException e){
+                    Log.e("BLUETOOTHCONNECTOR", "Message");
+                }
+            }
+        }).start();
 
-         /*Context context = getApplicationContext();
-        Toast toast = Toast.makeText(context, "hello", Toast.LENGTH_SHORT);
-        toast.show();*/
-        // Request discover from BluetoothAdapter
-       /* mBluetoothAdapter.startDiscovery();
-
-        // Register for broadcasts when a device is discovered
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        this.registerReceiver(mReceiver, filter);
-
-        // Register for broadcasts when discovery has finished
-        filter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        this.registerReceiver(mReceiver, filter);
-
-        // Register the BroadcastReceiver
-        //IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        //registerReceiver(mReceiver, filter); // Don't forget to unregister during onDestroy*/
     }
 
     // Create a BroadcastReceiver for ACTION_FOUND
@@ -162,13 +178,16 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
 
+
             // When discovery finds a device
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 
                 // Get the BluetoothDevice object from the Intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
                 // Add the name and address to an array adapter to show in a ListView
-                list.add(device.getName() + "\n" + device.getAddress());
+                listSearch.add(device.getName() + "\n" + device.getAddress());
+
             }
         }
     };

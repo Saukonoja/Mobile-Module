@@ -10,7 +10,7 @@
 
     <style name="MyActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
             <item name="colorPrimary">@color/colorBackground</item>
-            <item name="android:">@color/colorPrimaryDark</item>
+            <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
             <item name="colorAccent">@color/colorAccent</item>
     </style>
 
