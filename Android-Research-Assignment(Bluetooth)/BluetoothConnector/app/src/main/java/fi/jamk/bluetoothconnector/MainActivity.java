@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -36,13 +37,15 @@ public class MainActivity extends AppCompatActivity {
     ListView listViewSearch;
     final ArrayList<String> listPaired = new ArrayList<>();
     final ArrayList<String> listSearch = new ArrayList<>();
+    Menu menu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        newDeviceArrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, listSearch);
+
+
 
         switchStatus = (TextView) findViewById(R.id.switchStatus);
         mySwitch = (Switch) findViewById(R.id.switch1);
@@ -149,28 +152,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void search(){
+    public void search() {
 
-        new Thread(new Runnable(){
-            public void run(){
-                if (mBluetoothAdapter.isDiscovering()) {
-                    mBluetoothAdapter.cancelDiscovery();
-                }
-                mBluetoothAdapter.startDiscovery();
-            }
-        }).start();
+        new SearchTask().execute();
+    }
 
-        new Thread(new Runnable(){
-            public void run(){
-                try {
-                    Thread.sleep(12000);
-                    listViewSearch.setAdapter(newDeviceArrayAdapter);
-                }catch (InterruptedException e){
-                    Log.e("BLUETOOTHCONNECTOR", "Message");
-                }
-            }
-        }).start();
+    public void setToList(){
+        newDeviceArrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, listSearch);
+        listViewSearch.setAdapter(newDeviceArrayAdapter);
 
+        /*newDeviceArrayAdapter.clear();
+        newDeviceArrayAdapter.insert(this, 0);
+        newDeviceArrayAdapter.insert(android.R.layout.simple_list_item_1, 1);
+        newDeviceArrayAdapter.insert(listSearch, 2);
+        listViewSearch.setAdapter(newDeviceArrayAdapter);*/
     }
 
     // Create a BroadcastReceiver for ACTION_FOUND
@@ -191,4 +186,28 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+
+    private class SearchTask extends AsyncTask<Void, Integer, Void>{
+        @Override
+        protected void onPreExecute(){
+            //menu.getItem(1).setEnabled(false);
+        }
+
+        protected Void doInBackground(Void... params){
+            if (mBluetoothAdapter.isDiscovering()) {
+                mBluetoothAdapter.cancelDiscovery();
+            }
+            mBluetoothAdapter.startDiscovery();
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... params){
+
+        }
+
+        protected void onPostExecute(Void params){
+           setToList();
+        }
+    }
 }
