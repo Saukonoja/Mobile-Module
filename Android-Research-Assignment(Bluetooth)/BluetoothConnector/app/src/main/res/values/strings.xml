@@ -4,4 +4,6 @@
     <string name="rename_device">Rename device</string>
     <string name="visible_time">Device visible time</string>
     <string name="show_received_files">Show received files</string>
+    <string name="lblPaired">Paired devices</string>
+    <string name="lblSearch">Found devices</string>
 </resources>

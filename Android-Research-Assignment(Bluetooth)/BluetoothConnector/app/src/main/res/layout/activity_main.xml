@@ -23,20 +23,49 @@
         android:text=""
         android:id="@+id/switch1"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:textOff="Off"
+        android:textOn="On"/>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/lblPaired"
+        android:id="@+id/lblPaired"
+        android:layout_below="@id/switch1"
+        android:textSize="20dp"
+        android:textStyle="bold"/>
+    <View
+        android:id="@+id/SplitLine_hor1"
+        android:layout_width="match_parent"
+        android:layout_height= "2dp"
+        android:background="@color/orange"
+        android:layout_below="@id/lblPaired"/>
     <ListView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/listViewPaired"
         android:layout_centerHorizontal="true"
-        android:layout_below="@id/switch1"/>
-
+        android:layout_below="@id/lblPaired"
+        android:layout_marginBottom="20dp"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/lblSearch"
+        android:id="@+id/lblSearch"
+        android:layout_below="@id/listViewPaired"
+        android:textSize="20dp"
+        android:textStyle="bold"/>
+    <View
+        android:id="@+id/SplitLine_hor3"
+        android:layout_width="match_parent"
+        android:layout_height= "2dp"
+        android:layout_below="@id/lblSearch"
+        android:background="@color/orange" />
     <ListView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/listViewSearch"
         android:layout_centerHorizontal="true"
-
-        android:layout_below="@id/listViewPaired"/>
+        android:layout_below="@id/lblSearch"/>
 </RelativeLayout>
