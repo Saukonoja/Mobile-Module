@@ -1,15 +1,19 @@
 package fi.jamk.bluetoothconnector;
 
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.util.Log;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -19,6 +23,7 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -30,13 +35,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.*;
 
 
 
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_ENABLE_BT = 1;
+    private static final int REQUEST_ENABLE_VISIBLE =1;
     private TextView visibleStatus;
+    private TextView deviceNameView;
     private Switch visibleSwitch;
     private ArrayAdapter pairedArrayAdapter;
     private ArrayAdapter newDeviceArrayAdapter;
@@ -47,15 +55,31 @@ public class MainActivity extends AppCompatActivity {
     private final ArrayList<String> listPaired = new ArrayList<>();
     private Map<String, BluetoothDevice> hashMapNew = new HashMap<>();
     private final ArrayList<String> listSearch = new ArrayList<>();
+    private String deviceName = "";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        visibleStatus = (TextView) findViewById(R.id.switchStatus);
-        visibleSwitch = (Switch) findViewById(R.id.switch1);
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBluetoothAdapter == null) {
+            // Device does not support Bluetooth
+        }
+
+        visibleStatus = (TextView) findViewById(R.id.deviceStatus);
+        deviceNameView = (TextView) findViewById(R.id.deviceName);
+        visibleSwitch = (Switch) findViewById(R.id.visibleSwitch);
+
+        listViewPaired = (ListView) findViewById(R.id.listViewPaired);
+        listViewSearch = (ListView) findViewById(R.id.listViewSearch);
+
+        deviceNameView.setText(deviceName = mBluetoothAdapter.getName());
+
         visibleSwitch.setChecked(false);
+
+        visibleStatus.setText("Not showing to any device.");
 
         visibleSwitch.setOnCheckedChangeListener(new OnCheckedChangeListener() {
             @Override
@@ -64,24 +88,15 @@ public class MainActivity extends AppCompatActivity {
                 if (isChecked){
                     Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
                     discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
-                    startActivity(discoverableIntent);
-                    visibleStatus.setText("Device is currently visible");
+                    startActivityForResult(discoverableIntent, REQUEST_ENABLE_VISIBLE);
                 }else{
                     Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
                     discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 1);
-                    startActivity(discoverableIntent);
-                    visibleStatus.setText("Device is hidden");
+                    startActivityForResult(discoverableIntent, REQUEST_ENABLE_VISIBLE);
                 }
             }
         });
 
-        listViewPaired = (ListView) findViewById(R.id.listViewPaired);
-        listViewSearch = (ListView) findViewById(R.id.listViewSearch);
-
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (mBluetoothAdapter == null) {
-            // Device does not support Bluetooth
-        }
         IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_FOUND);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
@@ -91,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
         IntentFilter intent = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
         registerReceiver(mPairReceiver, intent);
         getPaired();
+        search();
 
         listViewSearch.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -98,17 +114,9 @@ public class MainActivity extends AppCompatActivity {
                 String phoneInfo = listSearch.get(position).toString();
                 String address = phoneInfo.substring(phoneInfo.length() - 17);
 
-
-
                 BluetoothDevice device = hashMapNew.get(address);
-
-                if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
-                    unPairDevice(device);
-                } else {
-                    showToast("Pairing...");
-                    pairDevice(device);
-
-                }
+                pairDevice(device);
+                showToast("Pairing...");
             }
         });
 
@@ -127,11 +135,35 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == REQUEST_ENABLE_VISIBLE) {
+            if (resultCode == 1){
+                visibleStatus.setText("Showing to all nearby devices.");
+            }
+            if (resultCode == RESULT_CANCELED) {
+                visibleStatus.setText("Not showing to any device.");
+                visibleSwitch.setChecked(false);
+            }
+        }
+    }
+
+    public void makeDiscoverable (int timeOut){
+        Class <?> baClass = BluetoothAdapter.class;
+        Method [] methods = baClass.getDeclaredMethods();
+        Method mSetScanMode = methods[44];
+        try {
+            mSetScanMode.invoke(mBluetoothAdapter, BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, timeOut);
+        } catch (Exception e) {
+            Log.e("discoverable", e.getMessage());
+        }
+    }
+
     private void pairDevice(BluetoothDevice device) {
         try {
             Method method = device.getClass().getMethod("createBond", (Class[]) null);
             method.invoke(device, (Object[]) null);
-            getPaired();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -141,7 +173,6 @@ public class MainActivity extends AppCompatActivity {
         try {
             Method method = device.getClass().getMethod("removeBond", (Class[]) null);
             method.invoke(device, (Object[]) null);
-            getPaired();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -178,9 +209,37 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_search:
                 search();
                 return  true;
+            case R.id.action_rename:
+                ChangeDeviceName();
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    void ChangeDeviceName(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Change device name");
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        builder.setPositiveButton("Change", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                deviceName = input.getText().toString();
+                mBluetoothAdapter.setName(deviceName);
+                deviceNameView.setText(deviceName = mBluetoothAdapter.getName());
+                showToast("Changed name to " + deviceName);
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        builder.show();
     }
 
     public void getPaired(){
@@ -251,8 +310,10 @@ public class MainActivity extends AppCompatActivity {
 
                 if (state == BluetoothDevice.BOND_BONDED && prevState == BluetoothDevice.BOND_BONDING) {
                     showToast("Paired");
+                    search();
                 } else if (state == BluetoothDevice.BOND_NONE && prevState == BluetoothDevice.BOND_BONDED){
                     showToast("Unpaired");
+                    search();
                 }
             }
         }

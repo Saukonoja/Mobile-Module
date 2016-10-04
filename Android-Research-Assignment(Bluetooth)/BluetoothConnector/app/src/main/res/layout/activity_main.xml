@@ -9,30 +9,37 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="fi.jamk.bluetoothconnector.MainActivity">
 
-
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Device is currently hidden"
-        android:id="@+id/switchStatus" />
+        android:textSize="22dp"
+        android:textStyle="bold"
+        android:layout_marginBottom="5dp"
+        android:id="@+id/deviceName" />
 
     <Switch
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text=""
-        android:id="@+id/switch1"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
+        android:id="@+id/visibleSwitch"
         android:textOff="Off"
-        android:textOn="On"/>
+        android:textOn="On"
+        android:layout_above="@+id/deviceStatus"
+        android:layout_centerHorizontal="true" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:id="@+id/deviceStatus"
+        android:layout_marginBottom="10dp"
+        android:layout_below="@id/deviceName"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/lblPaired"
         android:id="@+id/lblPaired"
-        android:layout_below="@id/switch1"
+        android:layout_below="@id/deviceStatus"
         android:textSize="20dp"
         android:textStyle="bold"/>
     <View
@@ -68,4 +75,6 @@
         android:id="@+id/listViewSearch"
         android:layout_centerHorizontal="true"
         android:layout_below="@id/lblSearch"/>
+
+
 </RelativeLayout>
