@@ -6,13 +6,8 @@ import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.telephony.CellInfo;
-import android.telephony.CellInfoCdma;
-import android.telephony.CellInfoGsm;
-import android.telephony.CellInfoLte;
-import android.telephony.CellSignalStrength;
-import android.telephony.CellSignalStrengthCdma;
-import android.telephony.CellSignalStrengthGsm;
+import android.telephony.PhoneStateListener;
+import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,43 +21,69 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements
         ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
 
     private Context mContext;
-    protected static boolean isAttached = false;
+    private KaaActivity kaa;
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
-    KaaActivity kaa;
-
-    private TextView mLatitudeText;
-    private TextView mLongitudeText;
 
     private final int REQUEST_LOCATION = 1;
+
+    private TelephonyManager mTelephonyManager;
+    private MyPhoneStateListener mPhoneStatelistener;
+
+    private String operatorName;
+
+    private double lat = 0;
+    private double lon = 0;
+
+    protected int mGsmSignalStrength = 0;
+    protected int mCdmaSignalStrength = 0;
+    protected int mEvdoSignalStrength = 0;
+
+    private TextView mLatitudeTextView;
+    private TextView mLongitudeTextView;
+    private TextView mOperatorNameTextView;
+    private TextView mGsmTextView;
+    private TextView mCdmaTextView;
+    private TextView mEvdoTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         kaa = new KaaActivity();
-        mContext=this;
+        mContext = this;
 
         kaa.kaaStart(mContext);
 
+        // get TextViews
+        mLatitudeTextView = (TextView) findViewById(R.id.latitudeTextView);
+        mLongitudeTextView = (TextView) findViewById(R.id.longitudeTextView);
+        mOperatorNameTextView = (TextView) findViewById((R.id.operatorNameTextView));
+        mGsmTextView = (TextView)findViewById(R.id.gsmTextView);
+        mCdmaTextView = (TextView)findViewById(R.id.cdmaTextView);
+        mEvdoTextView = (TextView)findViewById(R.id.evdoTextView);
 
-            // get TextViews
-            mLatitudeText = (TextView) findViewById(R.id.latitudeTextView);
-            mLongitudeText = (TextView) findViewById(R.id.longitudeTextView);
+        // build Google Play Services Client
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
 
-            // build Google Play Services Client
-            mGoogleApiClient = new GoogleApiClient.Builder(this)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .addApi(LocationServices.API)
-                    .build();
+        mPhoneStatelistener = new MyPhoneStateListener();
+        mTelephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+
+        operatorName = mTelephonyManager.getNetworkOperatorName();
+        mOperatorNameTextView.setText("Operator name: "+operatorName);
+
+        mTelephonyManager.listen(mPhoneStatelistener,PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
 
     }
 
@@ -84,30 +105,16 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onLocationChanged(Location location) {
+        lat = location.getLatitude();
+        lon = location.getLongitude();
+
         // show location in TextViews
-        mLatitudeText.setText("Latitude: " + location.getLatitude());
-        mLongitudeText.setText("Latitude: " + location.getLongitude());
+        mLatitudeTextView.setText("Latitude: " + lat);
+        mLongitudeTextView.setText("Longitude: " + lon);
 
-        double lat = location.getLatitude();
-        double lon = location.getLongitude();
-
-
-
-
-        kaa.sendLog(lat, lon,getSignal());
+        kaa.sendLog(operatorName, lat, lon, mGsmSignalStrength, mCdmaSignalStrength, mEvdoSignalStrength);
     }
 
-    public int getSignal(){
-        TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        List<CellInfo> cellInfoList = tm.getAllCellInfo();
-        int i = 0;
-        for (CellInfo cellInfo : cellInfoList) {
-
-                // cast to CellInfoLte and call all the CellInfoLte methods you need
-                 i = ((CellInfoLte)cellInfo).getCellSignalStrength().getDbm();
-        }
-       return i;
-    }
 
     @Override
     protected void onStart() {
@@ -156,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements
     private void startGettingLocation() {
         mLocationRequest = LocationRequest.create();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setInterval(1000); // Update location every second
+        mLocationRequest.setInterval(5000); // Update location every second
 
         // now permission is granted, but we need to check it
         int hasLocationPermission = ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION);
@@ -167,4 +174,22 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    class MyPhoneStateListener extends PhoneStateListener {
+
+        @Override
+        public void onSignalStrengthsChanged(SignalStrength signalStrength) {
+            super.onSignalStrengthsChanged(signalStrength);
+
+            mGsmSignalStrength = signalStrength.getGsmSignalStrength();
+            mGsmSignalStrength = (2 * mGsmSignalStrength) - 113; // -> dBm
+
+            mCdmaSignalStrength = signalStrength.getCdmaDbm();
+
+            mEvdoSignalStrength = signalStrength.getGsmBitErrorRate();
+
+            mGsmTextView.setText(Integer.toString(mGsmSignalStrength));
+            mCdmaTextView.setText(Integer.toString(mCdmaSignalStrength));
+            mEvdoTextView.setText(Integer.toString(mEvdoSignalStrength));
+        }
+    }
 }

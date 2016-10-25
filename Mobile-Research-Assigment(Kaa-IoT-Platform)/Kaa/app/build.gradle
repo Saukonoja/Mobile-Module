@@ -27,5 +27,5 @@ dependencies {
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.google.android.gms:play-services:9.6.1'
     testCompile 'junit:junit:4.12'
-    compile files('D:/H3298/Kaa/libs/kaa-android-ep-sdk-zOip_mUh7XaWTkSn5rlzGrJtKYg.jar')
+    compile files('D:/H3298/1/Mobile-Module/Mobile-Research-Assigment(Kaa-IoT-Platform)/Kaa/libs/kaa-android-ep-sdk-Sc_mw4jwov8i9_B90XU1ywhgCaM.jar')
 }

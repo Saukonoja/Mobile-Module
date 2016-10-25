@@ -12,8 +12,7 @@ import org.kaaproject.kaa.client.event.registration.UserAttachCallback;
 import org.kaaproject.kaa.client.logging.strategies.RecordCountLogUploadStrategy;
 import org.kaaproject.kaa.common.endpoint.gen.SyncResponseResultType;
 import org.kaaproject.kaa.common.endpoint.gen.UserAttachResponse;
-
-import demo.SignalData;
+import demo.SignalsData;
 
 
 public class KaaActivity extends AppCompatActivity {
@@ -44,18 +43,16 @@ public class KaaActivity extends AppCompatActivity {
             public void onAttachResult(UserAttachResponse response) {
                 Toast.makeText(getBaseContext(), "User attached to server", Toast.LENGTH_LONG).show();
                 if (response.getResult() == SyncResponseResultType.SUCCESS){
-                    MainActivity.isAttached = true;
                 }
                 else{
                     kaaClient.stop();
-                    MainActivity.isAttached = false;
                 }
             }
         });
     }
 
-    public void sendLog(double lan, double lon, int str){
-        SignalData signalData = new SignalData(lan, lon, str);
-        kaaClient.addLogRecord(signalData);
+    public void sendLog(String operatorName, double lan, double lon, int gsm, int cdma, int evdo){
+        SignalsData signalsData = new SignalsData(operatorName, lan, lon, gsm, cdma, evdo);
+        kaaClient.addLogRecord(signalsData);
     }
 }
