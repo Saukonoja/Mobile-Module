@@ -15,10 +15,7 @@
         android:id="@+id/action_rename"
         android:title="@string/rename_device"/>
     <item
-        android:id="@+id/action_visible"
-        android:title="@string/visible_time"/>
-    <item
-        android:id="@+id/action_show_received_files"
+        android:id="@+id/action_send_file"
         android:title="@string/show_received_files"/>
 
 </menu>

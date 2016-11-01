@@ -9,6 +9,13 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="fi.jamk.bluetoothconnector.MainActivity">
 
+    <LinearLayout
+        android:orientation="vertical"
+        android:visibility="invisible"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/linearLayout">
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -17,19 +24,11 @@
         android:layout_marginBottom="5dp"
         android:id="@+id/deviceName" />
 
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text=""
-        android:id="@+id/visibleSwitch"
-        android:textOff="Off"
-        android:textOn="On"
-        android:layout_above="@+id/deviceStatus"
-        android:layout_centerHorizontal="true" />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text=""
+        android:textStyle="bold"
         android:id="@+id/deviceStatus"
         android:layout_marginBottom="10dp"
         android:layout_below="@id/deviceName"/>
@@ -76,5 +75,6 @@
         android:layout_centerHorizontal="true"
         android:layout_below="@id/lblSearch"/>
 
+    </LinearLayout>
 
 </RelativeLayout>

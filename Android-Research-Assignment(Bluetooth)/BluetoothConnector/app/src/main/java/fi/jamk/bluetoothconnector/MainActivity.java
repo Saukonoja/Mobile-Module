@@ -8,14 +8,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Log;
-import android.view.Display;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.CompoundButton;
@@ -24,28 +21,28 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.*;
 
 
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int REQUEST_ENABLE_BT = 1;
-    private static final int REQUEST_ENABLE_VISIBLE =1;
+    private static final int REQUEST_ENABLE_VISIBLE = 1;
+    private static final int RES_CODE =  2;
     private TextView visibleStatus;
     private TextView deviceNameView;
-    private Switch visibleSwitch;
+    private Switch enableSwitch;
+    private LinearLayout layOut;
     private ArrayAdapter pairedArrayAdapter;
     private ArrayAdapter newDeviceArrayAdapter;
     private BluetoothAdapter mBluetoothAdapter;
@@ -70,32 +67,11 @@ public class MainActivity extends AppCompatActivity {
 
         visibleStatus = (TextView) findViewById(R.id.deviceStatus);
         deviceNameView = (TextView) findViewById(R.id.deviceName);
-        visibleSwitch = (Switch) findViewById(R.id.visibleSwitch);
 
         listViewPaired = (ListView) findViewById(R.id.listViewPaired);
         listViewSearch = (ListView) findViewById(R.id.listViewSearch);
 
         deviceNameView.setText(deviceName = mBluetoothAdapter.getName());
-
-        visibleSwitch.setChecked(false);
-
-        visibleStatus.setText("Not showing to any device.");
-
-        visibleSwitch.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView,
-                                         boolean isChecked) {
-                if (isChecked){
-                    Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-                    discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
-                    startActivityForResult(discoverableIntent, REQUEST_ENABLE_VISIBLE);
-                }else{
-                    Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-                    discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 1);
-                    startActivityForResult(discoverableIntent, REQUEST_ENABLE_VISIBLE);
-                }
-            }
-        });
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_FOUND);
@@ -133,31 +109,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-    }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        if (requestCode == REQUEST_ENABLE_VISIBLE) {
-            if (resultCode == 1){
-                visibleStatus.setText("Showing to all nearby devices.");
-            }
-            if (resultCode == RESULT_CANCELED) {
-                visibleStatus.setText("Not showing to any device.");
-                visibleSwitch.setChecked(false);
-            }
-        }
-    }
-
-    public void makeDiscoverable (int timeOut){
-        Class <?> baClass = BluetoothAdapter.class;
-        Method [] methods = baClass.getDeclaredMethods();
-        Method mSetScanMode = methods[44];
-        try {
-            mSetScanMode.invoke(mBluetoothAdapter, BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, timeOut);
-        } catch (Exception e) {
-            Log.e("discoverable", e.getMessage());
-        }
     }
 
     private void pairDevice(BluetoothDevice device) {
@@ -183,24 +135,67 @@ public class MainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         MenuItem itemSwitch = menu.findItem(R.id.action_bluetoothSwitch);
         itemSwitch.setActionView(R.layout.use_switch);
-        final Switch sw = (Switch) menu.findItem(R.id.action_bluetoothSwitch).getActionView().findViewById(R.id.bluetoothSwitch);
+        enableSwitch = (Switch) menu.findItem(R.id.action_bluetoothSwitch).getActionView().findViewById(R.id.bluetoothSwitch);
+        layOut = (LinearLayout) findViewById(R.id.linearLayout);
         if (mBluetoothAdapter.isEnabled()){
-            sw.setChecked(true);
+            enableSwitch.setChecked(true);
+            layOut.setVisibility(View.VISIBLE);
+            visibleStatus.setText("Showing to all nearby devices.");
         }
-        sw.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+        enableSwitch.setOnCheckedChangeListener(new OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked){
                     if (!mBluetoothAdapter.isEnabled()) {
-                        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+                        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
+                        startActivityForResult(discoverableIntent, REQUEST_ENABLE_VISIBLE);
                     }
                 }else{
+                    layOut.setVisibility(View.INVISIBLE);
                     mBluetoothAdapter.disable();
                 }
             }
         });
         return true;
+    }
+
+    protected void SendFile(){
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("file/*");
+        startActivityForResult(intent, RES_CODE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == REQUEST_ENABLE_VISIBLE) {
+            if (resultCode == 1){
+                mBluetoothAdapter.enable();
+                visibleStatus.setText("Showing to all nearby devices.");
+                layOut.setVisibility(View.VISIBLE);
+            }
+            if (resultCode == RESULT_CANCELED) {
+                enableSwitch.setChecked(false);
+            }
+        }
+
+        if (requestCode == RES_CODE) {
+
+            try {
+                Uri selectedImage = data.getData();
+
+                Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
+                emailIntent.setType("*/*");
+                emailIntent.putExtra(android.content.Intent.EXTRA_EMAIL, new String[]{"Share File"});
+                emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "File Name");
+                emailIntent.putExtra(Intent.EXTRA_STREAM, selectedImage);
+                startActivity(Intent.createChooser(emailIntent, "Share File"));
+
+            } catch (Exception e) {
+
+            }
+        }
     }
 
     @Override
@@ -211,6 +206,10 @@ public class MainActivity extends AppCompatActivity {
                 return  true;
             case R.id.action_rename:
                 ChangeDeviceName();
+                return  true;
+            case R.id.action_send_file:
+                SendFile();
+                return  true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -289,6 +288,12 @@ public class MainActivity extends AppCompatActivity {
                 for (String address : listPaired){
                     if (address.contains(device.getAddress())){
                        return;
+                    }
+                }
+
+                for (String address : listSearch){
+                    if (address.contains(device.getAddress())){
+                        return;
                     }
                 }
 
