@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Signaalin vahvuus</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="user_info">Omat tiedot</string>
+    <string name="enable_tracking">Paikanna minut</string>
+    <string name="show_location">Näytä sijaintini</string>
+    <string name="about">Tietoja</string>
+    <string name="sonera">Sonera</string>
+    <string name="dna">DNA</string>
+    <string name="saunalahti">Saunalahti</string>
+</resources>
