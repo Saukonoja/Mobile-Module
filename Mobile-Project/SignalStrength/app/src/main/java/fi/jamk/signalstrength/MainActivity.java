@@ -28,9 +28,6 @@ public class MainActivity extends AppCompatActivity {
 
     private ViewPager mViewPager;
 
-    private TextView textViewSonera;
-    private TextView textViewDNA;
-    private TextView textViewSaunalahti;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,10 +43,6 @@ public class MainActivity extends AppCompatActivity {
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
-
-        textViewSonera = (TextView) findViewById(R.id.sonera);
-        textViewDNA = (TextView) findViewById(R.id.dna);
-        textViewSaunalahti = (TextView) findViewById(R.id.saunalahti);
 
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -104,10 +97,10 @@ public class MainActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    textViewSonera.setTypeface(null, Typeface.ITALIC);
+
                     return new SoneraFragment();
                 case 1:
-                    textViewSonera.setTypeface(null, Typeface.NORMAL);
+                    //textViewSonera.setPaintFlags(textViewSonera.getPaintFlags() & (~ Paint.STRIKE_THRU_TEXT_FLAG));
                     return new DNAFragment();
                 case 2:
 
