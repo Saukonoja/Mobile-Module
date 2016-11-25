@@ -12,11 +12,7 @@
         android:orderInCategory="100"
         android:title="@string/enable_tracking"
         app:showAsAction="never" />
-    <item
-        android:id="@+id/show_location"
-        android:orderInCategory="100"
-        android:title="@string/show_location"
-        app:showAsAction="never" />
+
     <item
         android:id="@+id/about"
         android:orderInCategory="100"

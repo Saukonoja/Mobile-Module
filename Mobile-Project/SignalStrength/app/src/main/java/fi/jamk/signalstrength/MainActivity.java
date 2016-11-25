@@ -1,5 +1,6 @@
 package fi.jamk.signalstrength;
 
+import android.content.Intent;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.support.design.widget.FloatingActionButton;
@@ -73,15 +74,19 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.user_info) {
+            Intent intent = new Intent(MainActivity.this,PersonalActivity.class);
+            startActivity(intent);
             return true;
         }
         if (id == R.id.enable_tracking) {
+            TrackingDialogFragment eDialog = new TrackingDialogFragment();
+            eDialog.show(getFragmentManager(), "tracking");
             return true;
         }
-        if (id == R.id.show_location) {
-            return true;
-        }
+
         if (id == R.id.about) {
+            AboutDialogFragment eDialog = new AboutDialogFragment();
+            eDialog.show(getFragmentManager(), "about");
             return true;
         }
         return super.onOptionsItemSelected(item);

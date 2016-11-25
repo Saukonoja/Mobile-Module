@@ -3,6 +3,7 @@ package fi.jamk.signalstrength;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -43,7 +44,7 @@ import java.net.URL;
 public class SoneraFragment extends Fragment {
     MapView mMapView;
     private GoogleMap googleMap;
-    private JSONArray golfCourses;
+    private JSONArray soneraSignals;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -75,26 +76,11 @@ public class SoneraFragment extends Fragment {
                 // For zooming automatically to the location of the marker
                 CameraPosition cameraPosition = new CameraPosition.Builder().target(finland).zoom(5).build();
                 googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-                Circle circle = googleMap.addCircle(new CircleOptions()
-                        .center(finland)
-                        .radius(10000)
-                        .strokeColor(0xFF00FFFF)
-                        .fillColor(0x4D00FFFF));
-                Circle circle2 = googleMap.addCircle(new CircleOptions()
-                        .center(new LatLng(62.351108,27.708667))
-                        .radius(10000)
-                        .strokeColor(0xFF00FFFF)
-                        .fillColor(0x4D00FFFF));
-                Circle circle3 = googleMap.addCircle(new CircleOptions()
-                        .center(new LatLng(61.351108,28.708667))
-                        .radius(10000)
-                        .strokeColor(0xFF00FFFF)
-                        .fillColor(0x4D00FFFF));
             }
         });
 
-        FetchDataTask task = new FetchDataTask();
-        task.execute("http://ptm.fi/jamk/android/golfcourses/golf_courses.json");
+        FetchJSONTask task = new FetchJSONTask();
+        task.execute("http://84.251.189.202:8080/sonera");
         return rootView;
     }
 
@@ -122,7 +108,8 @@ public class SoneraFragment extends Fragment {
         mMapView.onLowMemory();
     }
 
-    class FetchDataTask extends AsyncTask<String, Void, JSONObject> {
+    class FetchJSONTask extends AsyncTask<String, Void, JSONObject> {
+
         @Override
         protected JSONObject doInBackground(String... urls) {
             HttpURLConnection urlConnection = null;
@@ -152,36 +139,65 @@ public class SoneraFragment extends Fragment {
         protected void onPostExecute(JSONObject json) {
             try {
                 BitmapDescriptor bitmapDescriptor = null;
-                golfCourses = json.getJSONArray("kentat");
-                for (int i = 0; i < golfCourses.length(); i++) {
-                    JSONObject golfJson = golfCourses.getJSONObject(i);
-                    LatLng latlng = new LatLng(golfJson.getDouble("lat"), golfJson.getDouble("lng"));
-                    if (golfJson.getString("Tyyppi").contains("?")) {
-                        bitmapDescriptor = (BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
+                soneraSignals = json.getJSONArray("sonera");
+                for (int i = 0; i < soneraSignals.length(); i++) {
+                    JSONObject signalJson = soneraSignals.getJSONObject(i);
+                    LatLng latlng = new LatLng(signalJson.getDouble("lat"), signalJson.getDouble("lon"));
+
+                    int strokeColor = 0;
+                    int fillColor = 0;
+
+                    if (Integer.parseInt(signalJson.getString("gsm")) > -65) {
+                        strokeColor = 0xFF00FF1A;
+                        fillColor = 0x4D00FF1A;
+                        // bitmapDescriptor = (BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
                     }
-                    if (golfJson.getString("Tyyppi").contains("Etu")) {
-                        bitmapDescriptor = (BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+
+                    if (Integer.parseInt(signalJson.getString("gsm")) >= -79 && Integer.parseInt(signalJson.getString("gsm")) <= -65) {
+                        strokeColor = 0xFFF7FF00;
+                        fillColor = 0x4DF7FF00;
+                        //bitmapDescriptor = (BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
                     }
-                    if (golfJson.getString("Tyyppi").contains("Kulta")) {
-                        bitmapDescriptor = (BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
+
+                    if (Integer.parseInt(signalJson.getString("gsm")) >= -89 && Integer.parseInt(signalJson.getString("gsm")) <= -80) {
+                        strokeColor = 0xFFFF8900;
+                        fillColor = 0x4DFF8900;
+                        // bitmapDescriptor = (BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
                     }
-                    if (golfJson.getString("Tyyppi").contains("Kulta/Etu")) {
-                        bitmapDescriptor = (BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+
+                    if (Integer.parseInt(signalJson.getString("gsm")) >= -99 && Integer.parseInt(signalJson.getString("gsm")) <= -90) {
+                        strokeColor = 0xFFFF00EF;
+                        fillColor = 0x4DFF00EF;
+                        //bitmapDescriptor = (BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
                     }
-                    final Marker markers = googleMap.addMarker(new MarkerOptions()
+
+                    if (Integer.parseInt(signalJson.getString("gsm")) >= -105 && Integer.parseInt(signalJson.getString("gsm")) <= -100) {
+                        strokeColor = 0xFFFF0000;
+                        fillColor = 0x4DFF0000;
+                        //bitmapDescriptor = (BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                    }
+
+                    Circle circle = googleMap.addCircle(new CircleOptions()
+                            .center(latlng)
+                            .radius(100)
+                            .strokeColor(strokeColor)
+                            .strokeWidth(2f)
+                            .fillColor(fillColor));
+
+
+                    /*final Marker markers = googleMap.addMarker(new MarkerOptions()
                             .position(latlng)
-                            .title(golfJson.getString("Kentta"))
-                            .snippet(golfJson.getString("Osoite") + "\n" + golfJson.getString("Puhelin") + "\n"
-                                    + golfJson.getString("Sahkoposti") + "\n" + golfJson.getString("Webbi"))
-                            .icon(bitmapDescriptor));
-                    //googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 5));
-
-
-                    //Toast.makeText(getApplicationContext(), golfJson.getString("Tyyppi"), Toast.LENGTH_SHORT).show();
+                            .title(signalJson.getString("gsm"))
+                            .icon(bitmapDescriptor));*/
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 14));
                 }
             } catch (JSONException e) {
                 Log.e("JSON", "Error getting data.");
             }
+
+
         }
     }
+
 }
+

@@ -2,10 +2,12 @@
     <string name="app_name">Signaalin vahvuus</string>
     <string name="section_format">Hello World from section: %1$d</string>
     <string name="user_info">Omat tiedot</string>
-    <string name="enable_tracking">Paikanna minut</string>
-    <string name="show_location">Näytä sijaintini</string>
+    <string name="enable_tracking">Paikannus päälle/pois</string>
     <string name="about">Tietoja</string>
     <string name="sonera">Sonera</string>
     <string name="dna">DNA</string>
     <string name="saunalahti">Saunalahti</string>
+    <string name="dialog_about">Tämä sovellus on tehty Jyväskylän Ammattikorkeakoulun Mobiili Projekti -kurssin harjoitustyöksi.\r\n\r\nSovelluksen ovat toteuttaneet Janne Hakala ja Timo Saukonoja.\r\n\r\n&#169; Signaalin vahvuus 2016</string>
+    <string name="dialog_ok">OK</string>
+    <string name="dialog_tracking_title">Paikannus</string>
 </resources>
