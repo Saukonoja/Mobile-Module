@@ -23,7 +23,8 @@
         </activity>
 
         <activity
-            android:name=".PersonalActivity">
+            android:name=".PersonalActivity"
+            android:theme="@style/AppTheme.NoActionBar">
         </activity>
 
         <meta-data

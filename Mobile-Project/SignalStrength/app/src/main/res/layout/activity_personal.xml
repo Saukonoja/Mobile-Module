@@ -25,45 +25,107 @@
 
         </android.support.v7.widget.Toolbar>
 
-
     </android.support.design.widget.AppBarLayout>
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:id="@+id/relTextViews">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="30dp"
+            android:textSize="35dp"
             android:text="@string/user_info"
-            android:id="@+id/personalInfoTextView"/>
+            android:id="@+id/personalInfoTextView"
+            android:layout_marginBottom="20dp"
+            android:textColor="@color/black"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="20dp"
+            android:textSize="25dp"
             android:layout_below="@+id/personalInfoTextView"
-            android:id="@+id/operatorNameTextView"/>
+            android:id="@+id/operatorNameTextView"
+            android:layout_marginBottom="15dp"
+            android:textColor="@color/black"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/operatorNameTextView"
-            android:textSize="20dp"
-            android:id="@+id/gsmTextView"/>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/operatorNameTextView"
+                android:orientation="horizontal"
+                android:id="@+id/linearGsm">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="20dp"
+                    android:id="@+id/gsmTextView"
+                    android:textColor="@color/black"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="20dp"
+                    android:layout_below="@+id/gsmTextView"
+                    android:id="@+id/gsmTextViewColor"
+                    android:layout_marginLeft="30dp"
+                    android:layout_marginBottom="15dp"
+                    android:textColor="@color/black"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/linearCdma"
+                android:layout_below="@+id/linearGsm">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="20dp"
+                    android:id="@+id/cdmaTextView"
+                    android:textColor="@color/black"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="20dp"
+                    android:id="@+id/cdmaTextViewColor"
+                    android:layout_marginLeft="30dp"
+                    android:layout_below="@+id/cdmaTextView"
+                    android:layout_marginBottom="15dp"
+                    android:textColor="@color/black"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/linearEvdo"
+                android:layout_below="@+id/linearCdma">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="20dp"
+                    android:id="@+id/evdoTextView"
+                    android:textColor="@color/black"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/evdoTextView"
+                    android:textSize="20dp"
+                    android:layout_marginLeft="30dp"
+                    android:id="@+id/evdoTextViewColor"
+                    android:textColor="@color/black"
+                    android:layout_marginBottom="15dp"/>
+            </LinearLayout>
+        </RelativeLayout>
 
-        <TextView
-            android:layout_width="wrap_content"
+        <ImageView
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/gsmTextView"
-            android:textSize="20dp"
-            android:id="@+id/cdmaTextView"/>
+            android:src="@drawable/signal"
+            android:id="@+id/signalImage"
+            android:layout_below="@+id/relTextViews"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/cdmaTextView"
-            android:textSize="20dp"
-            android:id="@+id/evdoTextView"/>
     </RelativeLayout>
 </android.support.design.widget.CoordinatorLayout>
