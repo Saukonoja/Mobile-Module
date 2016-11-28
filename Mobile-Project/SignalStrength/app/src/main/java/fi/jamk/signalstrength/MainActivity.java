@@ -122,6 +122,7 @@ public class MainActivity extends AppCompatActivity implements
         if (IsTracking) {
             lat = location.getLatitude();
             lon = location.getLongitude();
+            testPost();
 
             /* ei toiminut
             try {
@@ -314,5 +315,10 @@ public class MainActivity extends AppCompatActivity implements
 
             mEvdoSignalStrength = signalStrength.getGsmBitErrorRate();
         }
+    }
+
+    public void testPost(){
+        HttpRequestTask task = new HttpRequestTask();
+        task.execute();
     }
 }
