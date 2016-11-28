@@ -9,17 +9,25 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Date;
 import java.util.UUID;
+import java.util.zip.DataFormatException;
 
-public class HttpRequestTask extends AsyncTask<Void, Void, DataLocation> {
+public class HttpRequestTask extends AsyncTask<DataLocation, Void, DataLocation> {
+    DataLocation dl;
+    String uri;
+
+    public HttpRequestTask(DataLocation dl, String uri){
+        this.dl = dl;
+        this.uri = uri;
+    }
 
     @Override
-    protected DataLocation doInBackground(Void... params) {
+    protected DataLocation doInBackground(DataLocation... params ) {
         try {
-            final String uri = "http://84.251.189.202:8080/signals/pst";
+            //final String uri = "http://84.251.189.202:8080/signals/pst";
 
-            UUID uuid = randomUUID();
-            Date date = new Date();
-            DataLocation dl = new DataLocation(uuid, date, 62.341208, 25.858931, 89, 90, 91, 92);
+            //UUID uuid = randomUUID();
+            //Date date = new Date();
+            //DataLocation dl = new DataLocation(uuid, date, 62.341208, 25.858931, 89, 90, 91, 92);
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
             DataLocation dl1 = restTemplate.postForObject(uri, dl, DataLocation.class);

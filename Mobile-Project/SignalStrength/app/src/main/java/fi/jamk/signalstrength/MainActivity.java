@@ -36,8 +36,10 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements
         ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
@@ -67,6 +69,9 @@ public class MainActivity extends AppCompatActivity implements
     private Menu menu;
     private MenuItem menuTracking;
 
+    private UUID uuid;
+    private int mLteSignalStrength = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +89,8 @@ public class MainActivity extends AppCompatActivity implements
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
+        uuid = UUID.randomUUID();
+
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -91,9 +98,14 @@ public class MainActivity extends AppCompatActivity implements
                 .build();
 
         mPhoneStatelistener = new MyPhoneStateListener();
+
         mTelephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
 
         operatorName = mTelephonyManager.getNetworkOperatorName();
+
+        mTelephonyManager.listen(mPhoneStatelistener,PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+
+
 
         switchTracking = new Switch(MainActivity.this);
         switchTracking.setChecked(true);
@@ -122,22 +134,20 @@ public class MainActivity extends AppCompatActivity implements
         if (IsTracking) {
             lat = location.getLatitude();
             lon = location.getLongitude();
-            testPost();
+            Date date = new Date();
+            DataLocation dl = new DataLocation(uuid, date, lat, lon, mGsmSignalStrength, mCdmaSignalStrength, mEvdoSignalStrength, mLteSignalStrength);
 
-            /* ei toiminut
-            try {
-                Geocoder gcd = new Geocoder(this, Locale.getDefault());
-                List<Address> addresses = gcd.getFromLocation(62.2333333, 25.7333333, 1);
-                if (addresses.size() > 0) {
-                    showToast(addresses.get(0).getLocality());
-                } else {
 
-                }
-            }catch (Exception ex){
-
-            }*/
-
-            //kaa.SendLog(operatorName, lat, lon, mGsmSignalStrength, mCdmaSignalStrength, mEvdoSignalStrength);
+            if (operatorName.equals("Sonera") ){
+                String uri = "http://84.251.189.202:8080/signals/sonera";
+                testPost(dl, uri);
+            }else if (operatorName.equals("Dna")) {
+                String uri = "http://84.251.189.202:8080/signals/dna";
+                testPost(dl, uri);
+            }else if (operatorName.equals("Saunalahti")){
+                String uri = "http://84.251.189.202:8080/signals/saunalahti";
+                testPost(dl, uri);
+            }
         }
     }
     private void showToast(String message) {
@@ -157,6 +167,7 @@ public class MainActivity extends AppCompatActivity implements
             mGoogleApiClient.disconnect();
         }
     }
+
 
     private void checkPermissions() {
         // check permission
@@ -313,12 +324,22 @@ public class MainActivity extends AppCompatActivity implements
 
             mCdmaSignalStrength = signalStrength.getCdmaDbm();
 
-            mEvdoSignalStrength = signalStrength.getGsmBitErrorRate();
+            mEvdoSignalStrength = signalStrength.getEvdoDbm();
+
+            mLteSignalStrength = getLTE();
+
+
         }
     }
 
-    public void testPost(){
-        HttpRequestTask task = new HttpRequestTask();
+    public void testPost(DataLocation dl, String uri){
+        HttpRequestTask task = new HttpRequestTask(dl, uri);
         task.execute();
+    }
+
+    public int getLTE(){
+        int asu = mTelephonyManager.NETWORK_TYPE_LTE;
+        int dbm = asu - 140;
+        return dbm;
     }
 }
