@@ -9,7 +9,7 @@ import android.os.Bundle;
 public class AboutDialogFragment extends DialogFragment{
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        // Use the Builder class to create a Dialog
+        // We use the Builder class to create a Dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.about)
                 .setMessage(R.string.dialog_about)

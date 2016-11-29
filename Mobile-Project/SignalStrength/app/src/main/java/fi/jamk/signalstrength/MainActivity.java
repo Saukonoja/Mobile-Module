@@ -4,9 +4,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.location.Address;
-import android.location.Geocoder;
-import android.provider.Telephony;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.support.v4.app.Fragment;
@@ -38,13 +35,12 @@ import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 
 import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements
         ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
 
+    //variables
     private TelephonyManager mTelephonyManager;
     private MyPhoneStateListener mPhoneStatelistener;
 
@@ -53,8 +49,6 @@ public class MainActivity extends AppCompatActivity implements
 
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
-
-
 
     private final int REQUEST_LOCATION = 1;
 
@@ -82,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_main);
 
         this.menu = menu;
+        //setting toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         // Create the adapter that will return a fragment for each of the three
@@ -94,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements
 
         uuid = UUID.randomUUID();
 
+        //initialize google api
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -108,14 +104,13 @@ public class MainActivity extends AppCompatActivity implements
 
         mTelephonyManager.listen(mPhoneStatelistener,PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
 
-
-
         switchTracking = new Switch(MainActivity.this);
         switchTracking.setChecked(true);
 
         IsTracking = true;
     }
 
+    //functions for handling google api connection
     @Override
     public void onConnected(Bundle bundle) {
         // Connected to Google Play services.
@@ -132,6 +127,7 @@ public class MainActivity extends AppCompatActivity implements
         //This callback is important for handling errors.
     }
 
+    //called when location is changed
     @Override
     public void onLocationChanged(Location location) {
         if (IsTracking) {
@@ -157,6 +153,7 @@ public class MainActivity extends AppCompatActivity implements
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
 
+    //google api start and stop
     @Override
     protected void onStart() {
         super.onStart();
@@ -171,7 +168,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-
+    // checking that we have permissions for getting location
     private void checkPermissions() {
         // check permission
         int hasLocationPermission = ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION);
@@ -185,6 +182,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    //result for checking permission
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {
@@ -202,6 +200,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    //function to start get phones location with interval time
     private void startGettingLocation() {
             mLocationRequest = LocationRequest.create();
             mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -216,6 +215,7 @@ public class MainActivity extends AppCompatActivity implements
             }
     }
 
+    //initializing options menu
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -224,14 +224,11 @@ public class MainActivity extends AppCompatActivity implements
         return true;
     }
 
+    //handler for optionsitemselection
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.user_info) {
             Intent intent = new Intent(MainActivity.this,PersonalActivity.class);
             startActivity(intent);
@@ -266,14 +263,21 @@ public class MainActivity extends AppCompatActivity implements
 
             myDialog.show();
 
+            //switch checked listener
             switchTracking.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     if (isChecked){
                         IsTracking = true;
+                        Intent intent=new Intent("android.location.GPS_ENABLED_CHANGE");
+                        intent.putExtra("enabled", true);
+                        sendBroadcast(intent);
                         menuTracking.setTitle("Paikannus (päällä)");
                     }else{
                         IsTracking = false;
+                        Intent intent = new Intent("android.location.GPS_ENABLED_CHANGE");
+                        intent.putExtra("enabled", false);
+                        sendBroadcast(intent);
                         menuTracking.setTitle("Paikannus (pois)");
                     }
                 }
@@ -290,6 +294,8 @@ public class MainActivity extends AppCompatActivity implements
         return super.onOptionsItemSelected(item);
     }
 
+
+    //function for switching between tabs
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
         public SectionsPagerAdapter(FragmentManager fm) {
@@ -316,6 +322,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    //function for checking signals strength
     class MyPhoneStateListener extends PhoneStateListener {
 
         @Override
@@ -334,6 +341,7 @@ public class MainActivity extends AppCompatActivity implements
 
         }
     }
+
 
     public void testPost(DataLocation dl, String uri){
         HttpRequestTask task = new HttpRequestTask(dl, uri);

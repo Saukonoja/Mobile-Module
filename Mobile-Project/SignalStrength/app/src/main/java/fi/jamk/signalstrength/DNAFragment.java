@@ -23,6 +23,7 @@ public class DNAFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View rootView = inflater.inflate(R.layout.fragment_dna, container, false);
 
+        //initializing mapview
         mMapView = (MapView) rootView.findViewById(R.id.mapView);
         mMapView.onCreate(savedInstanceState);
 
@@ -55,6 +56,8 @@ public class DNAFragment extends Fragment {
         return rootView;
     }
 
+
+    //functions to handle mapView
     @Override
     public void onResume() {
         mMapView.onResume();

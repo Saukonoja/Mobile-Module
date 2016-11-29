@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 public class PersonalActivity extends AppCompatActivity {
 
+    //variables
     private TelephonyManager mTelephonyManager;
     private MyPhoneStateListener mPhoneStatelistener;
 
@@ -40,12 +41,15 @@ public class PersonalActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_personal);
 
+        //initializing toolbar
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
 
+        //setting back button visible
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
+        //listener for clicking back button
         myToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -74,6 +78,7 @@ public class PersonalActivity extends AppCompatActivity {
         mPersonalInfoTextView.setPaintFlags(mPersonalInfoTextView.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
     }
 
+    //function to listen phone's signal strengths
     class MyPhoneStateListener extends PhoneStateListener {
 
         @Override

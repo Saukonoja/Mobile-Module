@@ -109,6 +109,8 @@ public class SoneraFragment extends Fragment {
         mMapView.onLowMemory();
     }
 
+
+    //function to async fetch json data
     class FetchJSONTask extends AsyncTask<String, Void, JSONObject> {
 
         @Override
@@ -137,6 +139,7 @@ public class SoneraFragment extends Fragment {
             return json;
         }
 
+        //on post execute we parse json points to display in map
         protected void onPostExecute(JSONObject json) {
             try {
                 BitmapDescriptor bitmapDescriptor = null;
@@ -195,8 +198,6 @@ public class SoneraFragment extends Fragment {
             } catch (JSONException e) {
                 Log.e("JSON", "Error getting data.");
             }
-
-
         }
     }
 
