@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
+import android.provider.Telephony;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.support.v4.app.Fragment;
@@ -52,6 +53,8 @@ public class MainActivity extends AppCompatActivity implements
 
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
+
+
 
     private final int REQUEST_LOCATION = 1;
 
@@ -202,7 +205,7 @@ public class MainActivity extends AppCompatActivity implements
     private void startGettingLocation() {
             mLocationRequest = LocationRequest.create();
             mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-            mLocationRequest.setInterval(1000); // Update location every second
+            mLocationRequest.setInterval(30000); // Update location every second
 
             // now permission is granted, but we need to check it
             int hasLocationPermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
@@ -338,7 +341,9 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public int getLTE(){
-        int asu = mTelephonyManager.NETWORK_TYPE_LTE;
+        TelephonyManager lteTelephony;
+        lteTelephony = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+        int asu = lteTelephony.NETWORK_TYPE_LTE;
         int dbm = asu - 140;
         return dbm;
     }
