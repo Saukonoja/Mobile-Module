@@ -12,6 +12,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -80,8 +81,8 @@ public class SoneraFragment extends Fragment {
         });
 
         FetchJSONTask task = new FetchJSONTask();
-        //task.execute("http://84.251.189.202:8080/sonera");
-        task.execute("http://student.labranet.jamk.fi/~H3298/json/testdata.json");
+        task.execute("http://84.251.189.202:8080/sonera");
+        //task.execute("http://student.labranet.jamk.fi/~H3298/json/testdata.json");
         return rootView;
     }
 
@@ -143,7 +144,7 @@ public class SoneraFragment extends Fragment {
         protected void onPostExecute(JSONObject json) {
             try {
                 BitmapDescriptor bitmapDescriptor = null;
-                soneraSignals = json.getJSONArray("Sonera");
+                soneraSignals = json.getJSONArray("sonera");
                 for (int i = 0; i < soneraSignals.length(); i++) {
                     JSONObject signalJson = soneraSignals.getJSONObject(i);
                     LatLng latlng = new LatLng(signalJson.getDouble("lat"), signalJson.getDouble("lon"));
