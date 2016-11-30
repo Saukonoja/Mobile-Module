@@ -4,6 +4,8 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.location.LocationManager;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.support.v4.app.Fragment;
@@ -41,6 +43,8 @@ public class MainActivity extends AppCompatActivity implements
         ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
 
     //variables
+    private static final int GPS_CHECK = 1;
+
     private TelephonyManager mTelephonyManager;
     private MyPhoneStateListener mPhoneStatelistener;
 
@@ -69,6 +73,8 @@ public class MainActivity extends AppCompatActivity implements
     private UUID uuid;
     private int mLteSignalStrength = 0;
 
+    private LocationManager manager;
+    private boolean statusOfGPS;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,9 +111,14 @@ public class MainActivity extends AppCompatActivity implements
         mTelephonyManager.listen(mPhoneStatelistener,PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
 
         switchTracking = new Switch(MainActivity.this);
-        switchTracking.setChecked(true);
+
 
         IsTracking = true;
+
+        manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE );
+        statusOfGPS = manager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+
+
     }
 
     //functions for handling google api connection
@@ -221,6 +232,15 @@ public class MainActivity extends AppCompatActivity implements
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         menuTracking = menu.findItem(R.id.enable_tracking);
+
+        if (statusOfGPS){
+            switchTracking.setChecked(true);
+            menuTracking.setTitle("Paikannus (päällä)");
+        }else{
+            switchTracking.setChecked(false);
+            menuTracking.setTitle("Paikannus (pois)");
+        }
+
         return true;
     }
 
@@ -269,15 +289,13 @@ public class MainActivity extends AppCompatActivity implements
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     if (isChecked){
                         IsTracking = true;
-                        Intent intent=new Intent("android.location.GPS_ENABLED_CHANGE");
-                        intent.putExtra("enabled", true);
-                        sendBroadcast(intent);
+                        statusOfGPS = manager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+                        if (!statusOfGPS){
+                            startActivityForResult(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), GPS_CHECK);
+                        }
                         menuTracking.setTitle("Paikannus (päällä)");
                     }else{
                         IsTracking = false;
-                        Intent intent = new Intent("android.location.GPS_ENABLED_CHANGE");
-                        intent.putExtra("enabled", false);
-                        sendBroadcast(intent);
                         menuTracking.setTitle("Paikannus (pois)");
                     }
                 }
@@ -342,7 +360,6 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-
     public void testPost(DataLocation dl, String uri){
         HttpRequestTask task = new HttpRequestTask(dl, uri);
         task.execute();
@@ -354,5 +371,16 @@ public class MainActivity extends AppCompatActivity implements
         int asu = lteTelephony.NETWORK_TYPE_LTE;
         int dbm = asu - 140;
         return dbm;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        statusOfGPS = manager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        if (requestCode == GPS_CHECK) {
+            if (!statusOfGPS){
+               switchTracking.setChecked(false);
+            }
+        }
     }
 }

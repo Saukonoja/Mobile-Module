@@ -1,8 +1,10 @@
 package fi.jamk.signalstrength;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -82,8 +84,8 @@ public class SoneraFragment extends Fragment {
 
         FetchJSONTask task = new FetchJSONTask();
 
-        //task.execute("http://84.251.189.202:8080/sonera");
-        task.execute("http://student.labranet.jamk.fi/~H3298/json/testdata.json");
+        task.execute("http://84.251.189.202:8080/sonera");
+        //task.execute("http://student.labranet.jamk.fi/~H3298/json/testdata.json");
         return rootView;
     }
 
@@ -144,33 +146,35 @@ public class SoneraFragment extends Fragment {
         //on post execute we parse json points to display in map
         protected void onPostExecute(JSONObject json) {
             try {
-                BitmapDescriptor bitmapDescriptor = null;
-                soneraSignals = json.getJSONArray("Sonera");
+                soneraSignals = json.getJSONArray("sonera");
+
+                int height = 80;
+                int width = 80;
+                BitmapDrawable bitmapDrawable = null;
+
                 for (int i = 0; i < soneraSignals.length(); i++) {
                     JSONObject signalJson = soneraSignals.getJSONObject(i);
                     LatLng latlng = new LatLng(signalJson.getDouble("lat"), signalJson.getDouble("lon"));
 
                     if (Integer.parseInt(signalJson.getString("gsm")) > -65) {
-                        bitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.greencircle);
-                        //bitmapDescriptor = (BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                        bitmapDrawable = (BitmapDrawable)getResources().getDrawable(R.drawable.greencircle);
                     }
 
-                    if (Integer.parseInt(signalJson.getString("gsm")) < -89 && Integer.parseInt(signalJson.getString("gsm")) >= -99) {
-                        bitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.yellowcircle);
-                        //bitmapDescriptor = (BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                    if (Integer.parseInt(signalJson.getString("gsm")) > -99 && Integer.parseInt(signalJson.getString("gsm")) <= -66) {
+                        bitmapDrawable = (BitmapDrawable)getResources().getDrawable(R.drawable.yellowcircle);
                     }
-
 
                     if (Integer.parseInt(signalJson.getString("gsm")) < -100) {
-                        bitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.redcircle);
-                        //bitmapDescriptor = (BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                        bitmapDrawable = (BitmapDrawable)getResources().getDrawable(R.drawable.redcircle);
                     }
 
-                    final Marker marker = googleMap.addMarker(new MarkerOptions()
+                    Bitmap b = bitmapDrawable.getBitmap();
+                    Bitmap smallMarker = Bitmap.createScaledBitmap(b, width, height, false);
+
+                    googleMap.addMarker(new MarkerOptions()
                                     .position(latlng)
                                     .title("Signaalit")
-                                    .icon(bitmapDescriptor)
-                                    .icon(bitmapDescriptor)
+                                    .icon(BitmapDescriptorFactory.fromBitmap(smallMarker))
                                     .snippet("Latitude: " + signalJson.getDouble("lat") + "\n" + "Longitude: " + signalJson.getDouble("lon") + "\n"
                                            +"Gsm: " + signalJson.getInt("gsm") + "\n" + "Cdma: " + signalJson.getInt("cdma") + "\n" + "Evdo: " + signalJson.getInt("evdo")));
 
