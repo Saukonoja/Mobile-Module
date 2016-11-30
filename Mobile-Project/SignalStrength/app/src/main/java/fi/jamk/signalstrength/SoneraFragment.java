@@ -81,8 +81,9 @@ public class SoneraFragment extends Fragment {
         });
 
         FetchJSONTask task = new FetchJSONTask();
-        task.execute("http://84.251.189.202:8080/sonera");
-        //task.execute("http://student.labranet.jamk.fi/~H3298/json/testdata.json");
+
+        //task.execute("http://84.251.189.202:8080/sonera");
+        task.execute("http://student.labranet.jamk.fi/~H3298/json/testdata.json");
         return rootView;
     }
 
@@ -144,63 +145,74 @@ public class SoneraFragment extends Fragment {
         protected void onPostExecute(JSONObject json) {
             try {
                 BitmapDescriptor bitmapDescriptor = null;
-                soneraSignals = json.getJSONArray("sonera");
+                soneraSignals = json.getJSONArray("Sonera");
                 for (int i = 0; i < soneraSignals.length(); i++) {
                     JSONObject signalJson = soneraSignals.getJSONObject(i);
                     LatLng latlng = new LatLng(signalJson.getDouble("lat"), signalJson.getDouble("lon"));
 
-                    int strokeColor = 0;
-                    int fillColor = 0;
-
                     if (Integer.parseInt(signalJson.getString("gsm")) > -65) {
-                        strokeColor = 0xFF00FF1A;
-                        fillColor = 0x4D00FF1A;
-                        // bitmapDescriptor = (BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                        bitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.greencircle);
+                        //bitmapDescriptor = (BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
                     }
 
-                    if (Integer.parseInt(signalJson.getString("gsm")) >= -79 && Integer.parseInt(signalJson.getString("gsm")) <= -65) {
-                        strokeColor = 0xFFF7FF00;
-                        fillColor = 0x4DF7FF00;
+                    if (Integer.parseInt(signalJson.getString("gsm")) < -89 && Integer.parseInt(signalJson.getString("gsm")) >= -99) {
+                        bitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.yellowcircle);
                         //bitmapDescriptor = (BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
                     }
 
-                    if (Integer.parseInt(signalJson.getString("gsm")) >= -89 && Integer.parseInt(signalJson.getString("gsm")) <= -80) {
-                        strokeColor = 0xFFFF8900;
-                        fillColor = 0x4DFF8900;
-                        // bitmapDescriptor = (BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
-                    }
 
-                    if (Integer.parseInt(signalJson.getString("gsm")) >= -99 && Integer.parseInt(signalJson.getString("gsm")) <= -90) {
-                        strokeColor = 0xFFFF00EF;
-                        fillColor = 0x4DFF00EF;
-                        //bitmapDescriptor = (BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-                    }
-
-                    if (Integer.parseInt(signalJson.getString("gsm")) >= -105 && Integer.parseInt(signalJson.getString("gsm")) <= -100) {
-                        strokeColor = 0xFFFF0000;
-                        fillColor = 0x4DFF0000;
+                    if (Integer.parseInt(signalJson.getString("gsm")) < -100) {
+                        bitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.redcircle);
                         //bitmapDescriptor = (BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
                     }
 
-                    Circle circle = googleMap.addCircle(new CircleOptions()
-                            .center(latlng)
-                            .radius(100)
-                            .strokeColor(strokeColor)
-                            .strokeWidth(2f)
-                            .fillColor(fillColor));
+                    final Marker marker = googleMap.addMarker(new MarkerOptions()
+                                    .position(latlng)
+                                    .title("Signaalit")
+                                    .icon(bitmapDescriptor)
+                                    .icon(bitmapDescriptor)
+                                    .snippet("Latitude: " + signalJson.getDouble("lat") + "\n" + "Longitude: " + signalJson.getDouble("lon") + "\n"
+                                           +"Gsm: " + signalJson.getInt("gsm") + "\n" + "Cdma: " + signalJson.getInt("cdma") + "\n" + "Evdo: " + signalJson.getInt("evdo")));
 
-
-                    /*final Marker markers = googleMap.addMarker(new MarkerOptions()
-                            .position(latlng)
-                            .title(signalJson.getString("gsm"))
-                            .icon(bitmapDescriptor));*/
                     googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 14));
                 }
+
+                googleMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+                    @Override
+                    public View getInfoWindow(Marker arg0) {
+                        return null;
+                    }
+
+                    @Override
+                    public View getInfoContents(Marker marker) {
+
+                        Context context = getActivity(); //or getActivity(), YourActivity.this, etc.
+
+                        LinearLayout info = new LinearLayout(context);
+                        info.setOrientation(LinearLayout.VERTICAL);
+
+                        TextView title = new TextView(context);
+                        title.setTextColor(Color.BLACK);
+                        title.setGravity(Gravity.CENTER);
+                        title.setTypeface(null, Typeface.BOLD);
+                        title.setText(marker.getTitle());
+
+                        TextView snippet = new TextView(context);
+                        snippet.setTextColor(Color.GRAY);
+                        snippet.setText(marker.getSnippet());
+
+                        info.addView(title);
+                        info.addView(snippet);
+
+                        return info;
+                    }
+                });
+
             } catch (JSONException e) {
                 Log.e("JSON", "Error getting data.");
             }
         }
     }
-
 }
 

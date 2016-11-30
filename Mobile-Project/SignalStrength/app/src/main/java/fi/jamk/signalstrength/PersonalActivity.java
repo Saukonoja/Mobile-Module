@@ -96,28 +96,43 @@ public class PersonalActivity extends AppCompatActivity {
             mCdmaTextView.setText("CDMA " + Integer.toString(mCdmaSignalStrength) + " dBm");
             mEvdoTextView.setText("EVDO " + Integer.toString(mEvdoSignalStrength) + " dBm");
 
-            if (mGsmSignalStrength > -65 || mCdmaSignalStrength > - 65) {
+            if (mGsmSignalStrength > -65) {
                 mGsmTextViewColor.setText("PERFECT");mGsmTextViewColor.setBackgroundResource(R.color.green);
+            }
+
+            if (mGsmSignalStrength >= -79 && mGsmSignalStrength <= -65) {
+                mGsmTextViewColor.setText("GOOD");mGsmTextViewColor.setBackgroundResource(R.color.yellow);
+            }
+
+            if (mGsmSignalStrength >= -89 && mGsmSignalStrength <= -80) {
+                mGsmTextViewColor.setText("FAIR");mGsmTextViewColor.setBackgroundResource(R.color.orange);
+            }
+
+            if (mGsmSignalStrength >= -99 && mGsmSignalStrength <= -90) {
+                mGsmTextViewColor.setText("POOR");mGsmTextViewColor.setBackgroundResource(R.color.magenta);
+            }
+
+            if (mGsmSignalStrength <= -100) {
+                mGsmTextViewColor.setText("NO SIGNAL");mGsmTextViewColor.setBackgroundResource(R.color.red);
+            }
+
+            if (mCdmaSignalStrength > - 65) {
                 mCdmaTextViewColor.setText("PERFECT");mCdmaTextViewColor.setBackgroundResource(R.color.green);
             }
 
-            if (mGsmSignalStrength >= -79 && mGsmSignalStrength <= -65 || mCdmaSignalStrength >= -79 && mCdmaSignalStrength <= -65) {
-                mGsmTextViewColor.setText("GOOD");mGsmTextViewColor.setBackgroundResource(R.color.yellow);
+            if (mCdmaSignalStrength >= -79 && mCdmaSignalStrength <= -65) {
                 mCdmaTextViewColor.setText("GOOD");mCdmaTextViewColor.setBackgroundResource(R.color.yellow);
             }
 
-            if (mGsmSignalStrength >= -89 && mGsmSignalStrength <= -80 || mCdmaSignalStrength >= -89 && mCdmaSignalStrength <= -80) {
-                mGsmTextViewColor.setText("FAIR");mGsmTextViewColor.setBackgroundResource(R.color.orange);
+            if (mCdmaSignalStrength >= -89 && mCdmaSignalStrength <= -80) {
                 mCdmaTextViewColor.setText("FAIR");mCdmaTextViewColor.setBackgroundResource(R.color.orange);
             }
 
-            if (mGsmSignalStrength >= -99 && mGsmSignalStrength <= -90 || mCdmaSignalStrength >= -99 && mCdmaSignalStrength <= -90) {
-                mGsmTextViewColor.setText("POOR");mGsmTextViewColor.setBackgroundResource(R.color.magenta);
+            if (mCdmaSignalStrength >= -99 && mCdmaSignalStrength <= -90) {
                 mCdmaTextViewColor.setText("POOR");mCdmaTextViewColor.setBackgroundResource(R.color.magenta);
             }
 
             if (mGsmSignalStrength <= -100 || mCdmaSignalStrength <= -100) {
-                mGsmTextViewColor.setText("NO SIGNAL");mGsmTextViewColor.setBackgroundResource(R.color.red);
                 mCdmaTextViewColor.setText("NO SIGNAL");mCdmaTextViewColor.setBackgroundResource(R.color.red);
             }
         }
