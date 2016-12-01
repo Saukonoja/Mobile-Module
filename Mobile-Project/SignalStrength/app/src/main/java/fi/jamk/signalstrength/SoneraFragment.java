@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -84,7 +85,13 @@ public class SoneraFragment extends Fragment {
 
         FetchJSONTask task = new FetchJSONTask();
 
-        task.execute("http://84.251.189.202:8080/sonera");
+
+        try{
+            task.execute("http://84.251.189.202:8080/sonera");
+        }catch (Exception ex){
+            showToast("Cannot connect to database.");
+        }
+
         //task.execute("http://student.labranet.jamk.fi/~H3298/json/testdata.json");
         return rootView;
     }
@@ -157,15 +164,15 @@ public class SoneraFragment extends Fragment {
                     LatLng latlng = new LatLng(signalJson.getDouble("lat"), signalJson.getDouble("lon"));
 
                     if (Integer.parseInt(signalJson.getString("gsm")) > -65) {
-                        bitmapDrawable = (BitmapDrawable)getResources().getDrawable(R.drawable.greencircle);
+                        bitmapDrawable = (BitmapDrawable)getResources().getDrawable(R.drawable.greencircle2);
                     }
 
                     if (Integer.parseInt(signalJson.getString("gsm")) > -99 && Integer.parseInt(signalJson.getString("gsm")) <= -66) {
-                        bitmapDrawable = (BitmapDrawable)getResources().getDrawable(R.drawable.yellowcircle);
+                        bitmapDrawable = (BitmapDrawable)getResources().getDrawable(R.drawable.yellowcircle2);
                     }
 
                     if (Integer.parseInt(signalJson.getString("gsm")) < -100) {
-                        bitmapDrawable = (BitmapDrawable)getResources().getDrawable(R.drawable.redcircle);
+                        bitmapDrawable = (BitmapDrawable)getResources().getDrawable(R.drawable.redcircle2);
                     }
 
                     Bitmap b = bitmapDrawable.getBitmap();
@@ -217,6 +224,10 @@ public class SoneraFragment extends Fragment {
                 Log.e("JSON", "Error getting data.");
             }
         }
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
     }
 }
 
