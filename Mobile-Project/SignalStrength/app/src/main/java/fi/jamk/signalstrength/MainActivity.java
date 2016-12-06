@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.LocationManager;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -35,7 +36,6 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
-
 import java.util.Date;
 import java.util.UUID;
 
@@ -44,37 +44,31 @@ public class MainActivity extends AppCompatActivity implements
 
     //variables
     private static final int GPS_CHECK = 1;
-
     private TelephonyManager mTelephonyManager;
     private MyPhoneStateListener mPhoneStatelistener;
-
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
-
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
-
     private final int REQUEST_LOCATION = 1;
-
     private double lat = 0;
     private double lon = 0;
-
     protected int mGsmSignalStrength = 0;
     protected int mCdmaSignalStrength = 0;
     protected int mEvdoSignalStrength = 0;
-
+    private int mLteSignalStrength = 0;
     private String operatorName;
-
     private boolean IsTracking;
     private Switch switchTracking;
     private Menu menu;
     private MenuItem menuTracking;
-
     private UUID uuid;
-    private int mLteSignalStrength = 0;
 
     private LocationManager manager;
     private boolean statusOfGPS;
+
+
+    //private PowerManager.WakeLock wl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
+        // ini UUID this would be different for each "session"
         uuid = UUID.randomUUID();
 
         //initialize google api
@@ -103,29 +98,27 @@ public class MainActivity extends AppCompatActivity implements
                 .build();
 
         mPhoneStatelistener = new MyPhoneStateListener();
-
         mTelephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
-
         operatorName = mTelephonyManager.getNetworkOperatorName();
-
         mTelephonyManager.listen(mPhoneStatelistener,PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
-
         switchTracking = new Switch(MainActivity.this);
-
-
         IsTracking = true;
-
         manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE );
         statusOfGPS = manager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-
-
+        //Ini wakelock to send data when screen off NOTE: keeps te CPU running but system switcesh off GPS so location doesn't change
+        //PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
+        //wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "On");
+        //wl.acquire();
     }
+
+
 
     //functions for handling google api connection
     @Override
     public void onConnected(Bundle bundle) {
         // Connected to Google Play services.
         checkPermissions();
+
     }
 
     @Override
@@ -145,11 +138,12 @@ public class MainActivity extends AppCompatActivity implements
             lat = location.getLatitude();
             lon = location.getLongitude();
             Date date = new Date();
+            //DataLocation object for temporary data storage
             DataLocation dl = new DataLocation(uuid, date, lat, lon, mGsmSignalStrength, mCdmaSignalStrength, mEvdoSignalStrength, mLteSignalStrength);
 
-
             if (operatorName.equals("Sonera") ){
-                String uri = "http://84.251.189.202:8080/signals/sonera";
+                //String uri = "http://84.251.189.202:8080/signals/sonera"; // Timppas Home Ubuntu
+                String uri = "http://54.157.28.32:8080/signals/sonera"; // Ubuntu on AWS
                 testPost(dl, uri);
             }else if (operatorName.equals("Dna")) {
                 String uri = "http://84.251.189.202:8080/signals/dna";
@@ -158,6 +152,8 @@ public class MainActivity extends AppCompatActivity implements
                 String uri = "http://84.251.189.202:8080/signals/saunalahti";
                 testPost(dl, uri);
             }
+
+            // float speed = location.getSpeed(); // This could maybe be used to set interval according to users traveling speed
         }
     }
     private void showToast(String message) {
@@ -177,6 +173,7 @@ public class MainActivity extends AppCompatActivity implements
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }
+
     }
 
     // checking that we have permissions for getting location
@@ -215,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements
     private void startGettingLocation() {
             mLocationRequest = LocationRequest.create();
             mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-            mLocationRequest.setInterval(30000); // Update location every second
+            mLocationRequest.setInterval(3000); // Update location every three seconds
 
             // now permission is granted, but we need to check it
             int hasLocationPermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
@@ -240,7 +237,6 @@ public class MainActivity extends AppCompatActivity implements
             switchTracking.setChecked(false);
             menuTracking.setTitle("Paikannus (pois)");
         }
-
         return true;
     }
 
@@ -340,23 +336,17 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    //function for checking signals strength
+    //method for getting signal strengths
     class MyPhoneStateListener extends PhoneStateListener {
 
         @Override
         public void onSignalStrengthsChanged(SignalStrength signalStrength) {
             super.onSignalStrengthsChanged(signalStrength);
-
             mGsmSignalStrength = signalStrength.getGsmSignalStrength();
             mGsmSignalStrength = (2 * mGsmSignalStrength) - 113; // -> dBm
-
             mCdmaSignalStrength = signalStrength.getCdmaDbm();
-
             mEvdoSignalStrength = signalStrength.getEvdoDbm();
-
             mLteSignalStrength = getLTE();
-
-
         }
     }
 
@@ -364,7 +354,7 @@ public class MainActivity extends AppCompatActivity implements
         HttpRequestTask task = new HttpRequestTask(dl, uri);
         task.execute();
     }
-
+    //get 4G strength NOTE: seems to always return -13 so does not work as intended(or my provider has extremely stable LTE network)
     public int getLTE(){
         TelephonyManager lteTelephony;
         lteTelephony = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);

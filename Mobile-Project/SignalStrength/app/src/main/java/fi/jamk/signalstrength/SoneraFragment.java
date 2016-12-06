@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Date;
 
 
 public class SoneraFragment extends Fragment {
@@ -87,7 +88,8 @@ public class SoneraFragment extends Fragment {
 
 
         try{
-            task.execute("http://84.251.189.202:8080/sonera");
+            //task.execute("http://84.251.189.202:8080/sonera"); // Timppas Home Ubuntu
+            task.execute("http://54.157.28.32:8080/sonera"); // Ubunto on AWS
         }catch (Exception ex){
             showToast("Cannot connect to database.");
         }
@@ -167,23 +169,26 @@ public class SoneraFragment extends Fragment {
                         bitmapDrawable = (BitmapDrawable)getResources().getDrawable(R.drawable.greencircle2);
                     }
 
-                    if (Integer.parseInt(signalJson.getString("gsm")) > -99 && Integer.parseInt(signalJson.getString("gsm")) <= -66) {
+                    if (Integer.parseInt(signalJson.getString("gsm")) > -99 && Integer.parseInt(signalJson.getString("gsm")) <= -65) {
                         bitmapDrawable = (BitmapDrawable)getResources().getDrawable(R.drawable.yellowcircle2);
                     }
 
-                    if (Integer.parseInt(signalJson.getString("gsm")) < -100) {
+                    if (Integer.parseInt(signalJson.getString("gsm")) <= -99) {
                         bitmapDrawable = (BitmapDrawable)getResources().getDrawable(R.drawable.redcircle2);
                     }
 
                     Bitmap b = bitmapDrawable.getBitmap();
                     Bitmap smallMarker = Bitmap.createScaledBitmap(b, width, height, false);
 
+                    Date date = new Date(signalJson.getInt("insertion_time"));
+
                     googleMap.addMarker(new MarkerOptions()
                                     .position(latlng)
                                     .title("Signaalit")
                                     .icon(BitmapDescriptorFactory.fromBitmap(smallMarker))
                                     .snippet("Latitude: " + signalJson.getDouble("lat") + "\n" + "Longitude: " + signalJson.getDouble("lon") + "\n"
-                                           +"Gsm: " + signalJson.getInt("gsm") + "\n" + "Cdma: " + signalJson.getInt("cdma") + "\n" + "Evdo: " + signalJson.getInt("evdo")));
+                                           +"Gsm: " + signalJson.getInt("gsm") + "\n" + "Cdma: " + signalJson.getInt("cdma") + "\n"
+                                           + "Evdo: " + signalJson.getInt("evdo") + "\n" + "Time: "+ date));
 
                     googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 14));
                 }

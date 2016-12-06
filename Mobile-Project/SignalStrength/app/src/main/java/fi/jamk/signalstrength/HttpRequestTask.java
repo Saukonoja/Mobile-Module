@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.zip.DataFormatException;
 
+// This class is responsible for sending POST requests to rest
 public class HttpRequestTask extends AsyncTask<DataLocation, Void, DataLocation> {
     DataLocation dl;
     String uri;
@@ -23,11 +24,6 @@ public class HttpRequestTask extends AsyncTask<DataLocation, Void, DataLocation>
     @Override
     protected DataLocation doInBackground(DataLocation... params ) {
         try {
-            //final String uri = "http://84.251.189.202:8080/signals/pst";
-
-            //UUID uuid = randomUUID();
-            //Date date = new Date();
-            //DataLocation dl = new DataLocation(uuid, date, 62.341208, 25.858931, 89, 90, 91, 92);
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
             DataLocation dl1 = restTemplate.postForObject(uri, dl, DataLocation.class);
@@ -35,7 +31,6 @@ public class HttpRequestTask extends AsyncTask<DataLocation, Void, DataLocation>
         } catch (Exception e) {
             Log.e("MainActivity", e.getMessage(), e);
         }
-
         return null;
     }
 

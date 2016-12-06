@@ -33,7 +33,7 @@ public class AboutDialogFragment extends DialogFragment{
         TextView linkTextView = new TextView(getActivity());
 
         linkTextView.setText(Html.fromHtml("<b>Täältä löytyy signaalien raakadatat: </b>" +
-                "<a href=\"http://84.251.189.202:8080/sonera\">Raakadata</a> "));
+                "<a href=\"http://54.157.28.32:8080/sonera\">Raakadata</a> "));
         linkTextView.setMovementMethod(LinkMovementMethod.getInstance());
 
         params.setMargins(50,50,50,50); //substitute parameters for left, top, right, bottom
